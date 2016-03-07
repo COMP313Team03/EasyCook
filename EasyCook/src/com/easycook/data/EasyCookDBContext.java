@@ -6,7 +6,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteQueryBuilder;
+
 
 public class EasyCookDBContext extends SQLiteAssetHelper {
 
@@ -18,7 +18,7 @@ public class EasyCookDBContext extends SQLiteAssetHelper {
 	}
 
 	public Cursor getIngredients() {
-
+		
 		SQLiteDatabase db = getReadableDatabase();			
 		Cursor c = db.rawQuery("SELECT * FROM ingredients WHERE image_name IS NOT NULL ORDER BY Like DESC",null);
 		c.moveToFirst();

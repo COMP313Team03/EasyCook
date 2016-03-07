@@ -1,10 +1,16 @@
 package com.easycook.ui;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import com.example.easycook.MainActivity;
 import com.example.easycook.R;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -126,12 +132,24 @@ public class IngredientControl extends GridLayout {
 
 	}
 
-	public void setImage(String title_text)
+	public void setImage(String title_text) throws IOException
 	{
+		URL url;
+		try {
+			url = new URL("http://image10.bizrate-images.com/resize?sq=60&uid=2216744464");
+			Bitmap bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+			image.setImageBitmap(bmp);
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		
+		/*
 		photo_name = title_text;
 		Context context = image.getContext();
 		int id = context.getResources().getIdentifier(title_text, "drawable", context.getPackageName());		
 		image.setImageResource(id);
+		*/
 	}
 
 	public void setTitle(String title_text)

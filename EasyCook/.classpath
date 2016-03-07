@@ -5,5 +5,14 @@
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
+	<classpathentry kind="lib" path="C:/Users/Manuel/Downloads/mongo-java-driver-3.2.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Manuel/Downloads/bson-3.0.4-javadoc.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Manuel/Downloads/gson-2.6.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Manuel/Downloads/httpcomponents-asyncclient-4.1.1-bin.zip"/>
+	<classpathentry kind="lib" path="C:/Users/Manuel/Downloads/httpcomponents-client-4.5.2-src.zip"/>
+	<classpathentry kind="lib" path="C:/Users/Manuel/Downloads/httpcomponents-client-4.5.2-bin.zip"/>
+	<classpathentry kind="lib" path="C:/Users/Manuel/Downloads/log4j-1.2.17.zip"/>
+	<classpathentry kind="lib" path="C:/Users/Manuel/Downloads/JAR/httpclient-4.2.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Manuel/Downloads/JAR/apache-httpcomponents-httpcore.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

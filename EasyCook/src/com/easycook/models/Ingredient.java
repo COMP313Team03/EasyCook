@@ -1,5 +1,8 @@
 package com.easycook.models;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 /*
  * This class is a model that should be identical
  * to the Ingredient table on the database so 
@@ -7,12 +10,31 @@ package com.easycook.models;
  */
 public class Ingredient  {
 	
+	@SerializedName("_id")
+	@Expose
 	private int _id;
+	
+	@SerializedName("ingredient_name")
+	@Expose
 	private String ingredient_name;
-	private String ingredient_picture_name; // wee need to add this to the table
+	
+	@SerializedName("ingredient_image")
+	@Expose
+	private String ingredientImage;	
+	
 	private int ingredient_category_id;
+	
+	@SerializedName("like")
+	@Expose
 	private int like;
+	
+	@SerializedName("category_id")
+	@Expose
 	private int category;
+	
+	@SerializedName("image_name")
+	@Expose
+	private String ingredient_picture_name; // wee need to add this to the table
 
 	public int getCategory() {
 		return category;
@@ -46,10 +68,16 @@ public class Ingredient  {
 	public void setIngredient_picture_name(String ingredient_picture_name) {
 		this.ingredient_picture_name = ingredient_picture_name;
 	}
-	public int getIngredient_category_id() {
+	public String getIngredientImage() {
+		return ingredientImage;
+	}
+	public void setIngredientImage(String ingredientImage) {
+		this.ingredientImage = ingredientImage;
+	}
+	public int getIngredient_category_id1() {
 		return ingredient_category_id;
 	}
-	public void setIngredient_category_id(int ingredient_category_id) {
+	public void setIngredient_category_id1(int ingredient_category_id) {
 		this.ingredient_category_id = ingredient_category_id;
 	}
 }

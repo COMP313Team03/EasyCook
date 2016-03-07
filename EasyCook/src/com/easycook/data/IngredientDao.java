@@ -1,7 +1,22 @@
 package com.easycook.data;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Random;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+
 import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -9,16 +24,38 @@ import android.util.Log;
 
 import com.easycook.models.Ingredient;
 import com.easycook.models.IngredientCategory;
+import com.easycook.models.IngredientRequest;
+import com.google.gson.Gson;
 
 public class IngredientDao {
 
 	// List of ingredients for testing 
 	static String[] ingredientBase = { "Chicken" , "Tomato" , "Beef" , "Onion" , "Eggs" };	
 
-	public static ArrayList<Ingredient> GetIngredients(Cursor cursor)
-	{
+	public static ArrayList<Ingredient> GetIngredients(Cursor cursor) throws IOException
+	{	
 		ArrayList<Ingredient> ingredients = new ArrayList<Ingredient>();
+		
+		HttpClient httpclient = new DefaultHttpClient();
+	    HttpResponse response = httpclient.execute(new HttpGet("https://easycook.herokuapp.com/ingredients"));
+	    StatusLine statusLine = response.getStatusLine();
+	    if(statusLine.getStatusCode() == HttpStatus.SC_OK){
+	        ByteArrayOutputStream out = new ByteArrayOutputStream();
+	        response.getEntity().writeTo(out);
+	        String responseString = out.toString();
+	        out.close();
+	        
+	        Gson gson = new Gson();
+            IngredientRequest i = gson.fromJson(responseString, IngredientRequest.class);            
+            return (ArrayList<Ingredient>) i.getIngredients();         
+	        
+	    } else{
+	        //Closes the connection.
+	        response.getEntity().getContent().close();
+	        throw new IOException(statusLine.getReasonPhrase());
+	    }
 
+	    /*
 		if (cursor != null)
 		{
 			if ( cursor.moveToFirst())
@@ -43,7 +80,7 @@ public class IngredientDao {
 			}
 		}			
 		cursor.close();
-		return ingredients;
+		return ingredients;*/
 	}	
 	
 	public static ArrayList<IngredientCategory> GetIngredientCategory(Cursor cursor)

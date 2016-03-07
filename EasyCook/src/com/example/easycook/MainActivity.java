@@ -1,5 +1,6 @@
 package com.example.easycook;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 
@@ -71,7 +72,12 @@ public class MainActivity extends Activity {
 		if (size.x/4 >= 30) 
 			sizeTile = size.x/4; 
 
-		_populateIngredients(sizeTile);	
+		try {
+			_populateIngredients(sizeTile);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
 
 		_populateRecipes(sizeTile);
 
@@ -519,7 +525,7 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	private void _populateIngredients(int size)
+	private void _populateIngredients(int size) throws IOException
 	{
 		if (ingredientControls != null && !ingredientControls.isEmpty())
 			return;
@@ -531,14 +537,15 @@ public class MainActivity extends Activity {
 		try {			
 			ingredients = IngredientDao.GetIngredients(db.getIngredients());
 		}catch(Exception e){
-
+			Log.e("ERROR","ERROR");
 		}
 		for (Ingredient ingredient : ingredients)
 		{			
 			IngredientControl ingredientControl = new IngredientControl(this);	
 			ingredientControl.mainactivity = this;
 
-			ingredientControl.setImage(ingredient.getIngredient_picture_name());
+			//ingredientControl.setImage(ingredient.getIngredient_picture_name());
+			ingredientControl.setImage(ingredient.getIngredientImage());
 			ingredientControl.setTitle(ingredient.getIngredient_name());
 			ingredientControl.setId(ingredient.get_id());		
 			ingredientControl.setSize(size);
