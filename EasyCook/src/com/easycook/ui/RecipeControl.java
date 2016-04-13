@@ -3,6 +3,7 @@ package com.easycook.ui;
 import com.easycook.models.Recipe;
 import com.example.easycook.MainActivity;
 import com.example.easycook.R;
+import com.squareup.picasso.Picasso;
 
 import android.R.bool;
 import android.content.Context;
@@ -118,5 +119,9 @@ public class RecipeControl extends GridLayout {
 	public String getTitle()
 	{
 		return name.getText().toString();
+	}
+
+	public void setImageURL(String url) {		
+		Picasso.with(mainactivity).load(url).into(image);		
 	}
 }

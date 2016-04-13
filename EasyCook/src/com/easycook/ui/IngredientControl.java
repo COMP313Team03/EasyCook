@@ -2,6 +2,8 @@ package com.easycook.ui;
 
 import com.example.easycook.MainActivity;
 import com.example.easycook.R;
+import com.squareup.picasso.Picasso;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
@@ -25,8 +27,17 @@ public class IngredientControl extends GridLayout {
 	private boolean selected;
 	private boolean onLikeOption = false;
 	private String photo_name;
+	private String photo_url;
 	private int like;
-	private int category;
+	private int category;	
+	
+	public String getPhoto_url() {
+		return photo_url;
+	}
+
+	public void setPhoto_url(String photo_url) {
+		this.photo_url = photo_url;
+	}
 
 	public int getCategory() {
 		return category;
@@ -93,10 +104,8 @@ public class IngredientControl extends GridLayout {
 		selected = false;
 
 		image.setOnLongClickListener(new OnLongClickListener() {
-
 			@Override
-			public boolean onLongClick(View v) {
-				Log.d("HOLD", "HOLD");
+			public boolean onLongClick(View v) {				
 				onLikeOption = true;
 				mainactivity.ShowLikePanel();				
 				return true;
@@ -119,7 +128,7 @@ public class IngredientControl extends GridLayout {
 					selected_image.setVisibility(VISIBLE);
 					selected = true;
 				}
-				Log.d("HOLD", "SHORT");
+				
 				mainactivity.SearchRecipe();
 			}
 		});
@@ -132,6 +141,12 @@ public class IngredientControl extends GridLayout {
 		Context context = image.getContext();
 		int id = context.getResources().getIdentifier(title_text, "drawable", context.getPackageName());		
 		image.setImageResource(id);
+	}
+	
+	public void setImageURL(String url)
+	{	
+		Picasso.with(mainactivity).load(url).into(image);	
+		setPhoto_url(url);
 	}
 
 	public void setTitle(String title_text)

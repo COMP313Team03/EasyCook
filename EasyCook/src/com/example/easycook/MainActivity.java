@@ -2,18 +2,17 @@ package com.example.easycook;
 
 import java.util.ArrayList;
 
-
-import com.easycook.data.IngredientDao;
-import com.easycook.data.EasyCookDBContext;
-import com.easycook.data.RecipeDao;
 import com.easycook.models.*;
 import com.easycook.ui.*;
+import com.squareup.picasso.Picasso;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
@@ -35,8 +34,15 @@ import android.widget.TabHost.TabSpec;
 public class MainActivity extends Activity {	
 
 	ArrayList<IngredientControl> ingredientControls;
-	ArrayList<RecipeControl> recipeControls;
-	private EasyCookDBContext db;
+	ArrayList<RecipeControl> recipeControls;	
+	
+	public ArrayList<Ingredient> ingredients = new ArrayList<Ingredient>();
+	public ArrayList<Recipe> recipes = new ArrayList<Recipe>();
+	ArrayList<BridgeTable> bridgeTables;
+	
+	public ArrayList<RecipeCategory> recipeCategory;	
+	public ArrayList<IngredientCategory> ingredientCategory;
+	
 	private Button clearIngredients;
 	boolean created = false;
 	int sizeTile = 0;
@@ -52,24 +58,72 @@ public class MainActivity extends Activity {
 		Display display = getWindowManager().getDefaultDisplay();
 		Point size = new Point();
 		display.getSize(size);
+		
+		if (size.x/4 >= 30) 
+			sizeTile = size.x/4;
 
-		_createTabControl();		
-		try
-		{
-			db = new EasyCookDBContext(this);			
-		}
-		catch (Exception e)
-		{			
+		_createTabControl();
+		
+		this.runOnUiThread(new Runnable() {
+			
+			@Override
+			public void run() {
+				int counter = 0;
+				do {
+					
+					if (isNetworkAvailable())
+					{
+						Worker worker = new Worker();
+						worker.main = MainActivity.this;
+						worker.start();
+						counter = 3;
+					}
+					else
+					{
+						counter++;
+						try {
+							Thread.sleep(2000);
+						} catch (InterruptedException e) {
+							
+						}
+						ShowMessage("No Network ");
+					}
+				}while(counter < 3);
+				
+			}
+		});
+	}
+	
+	public void ShowMessage(String message)
+	{
+		((TextView)findViewById(R.id.loadingMessage)).setText(message);
+	}
+	
+	public boolean isNetworkAvailable() {
+		ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService( Context.CONNECTIVITY_SERVICE);	    
+	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+	    return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+	}
+	
+	public void StartAPP()
+	{
+		this.runOnUiThread(new Runnable() {			
+			@Override
+			public void run() {
+				InitApplication();	
+				((LinearLayout)findViewById(R.id.relativeLayout1)).setVisibility(View.VISIBLE);
+				((GridLayout)findViewById(R.id.likeGrid)).setVisibility(View.VISIBLE);
+				((GridLayout)findViewById(R.id.loadingGrid)).setVisibility(View.GONE);
+			}
+		});
+	}
 
-		}
-
+	public void InitApplication()
+	{
 		GridLayout grid = (GridLayout)findViewById(R.id.likeGrid);		
 		GridLayout parent = (GridLayout)grid.getParent();
 		parent.removeView(grid);
-		parent.addView(grid);
-
-		if (size.x/4 >= 30) 
-			sizeTile = size.x/4; 
+		parent.addView(grid);		 
 
 		_populateIngredients(sizeTile);	
 
@@ -170,7 +224,7 @@ public class MainActivity extends Activity {
 					{					
 						ingredient.SetLikeIngredient(1);
 						ingredient.setOnLikeOption(false);
-						db.UpdateLikeIngredient(ingredient.getId(), ingredient.getLike());
+						//db.UpdateLikeIngredient(ingredient.getId(), ingredient.getLike());
 					}				
 				}
 				((GridLayout)findViewById(R.id.likeGrid)).setVisibility(View.GONE);
@@ -188,7 +242,7 @@ public class MainActivity extends Activity {
 					{	
 						ingredient.SetLikeIngredient(-1);
 						ingredient.setOnLikeOption(false);
-						db.UpdateLikeIngredient(ingredient.getId(), ingredient.getLike());
+						//db.UpdateLikeIngredient(ingredient.getId(), ingredient.getLike());
 					}				
 				}
 				((GridLayout)findViewById(R.id.likeGrid)).setVisibility(View.GONE);
@@ -218,7 +272,8 @@ public class MainActivity extends Activity {
 			}
 		});
 
-		for (IngredientCategory cat : IngredientDao.GetIngredientCategory(db.GetIngredientCategory()))
+		//for (IngredientCategory cat : IngredientDao.GetIngredientCategory(db.GetIngredientCategory()))
+		for (IngredientCategory cat : ingredientCategory)		
 		{			
 			Button category = new Button(this);
 
@@ -259,7 +314,8 @@ public class MainActivity extends Activity {
 			((LinearLayout)findViewById(R.id.tabICategory)).addView(category);
 		}
 		
-		for (RecipeCategory cat : RecipeDao.GetRecipeCategory(db.GetRecipeCategory()))
+		//for (RecipeCategory cat : RecipeDao.GetRecipeCategory(db.GetRecipeCategory()))
+	    for (RecipeCategory cat : recipeCategory)
 		{			
 			Button category = new Button(this);
 
@@ -298,8 +354,9 @@ public class MainActivity extends Activity {
 
 			((LinearLayout)findViewById(R.id.tabRCategory)).addView(category);
 		}
+		
 	}
-
+	
 	private void _leftButtonIngredientsAction()
 	{
 		EditText editText = (EditText)findViewById(R.id.txtSearchI);
@@ -484,16 +541,8 @@ public class MainActivity extends Activity {
 
 		if (recipeControls != null && !recipeControls.isEmpty())
 			return;
-
-		LinearLayout mainTab = (LinearLayout)findViewById(R.id.tab2);
-
-		ArrayList<Recipe> recipes = new ArrayList<Recipe>();
-
-		try {			
-			recipes = RecipeDao.GetIngredients(db.getRecipes());
-		}catch(Exception e){
-
-		}
+		
+		LinearLayout mainTab = (LinearLayout)findViewById(R.id.tab2);		
 
 		recipeControls = new ArrayList<RecipeControl>();
 
@@ -504,12 +553,13 @@ public class MainActivity extends Activity {
 				RecipeControl recipeControl = new RecipeControl(this);	
 				recipeControl.mainactivity = this;	
 				recipeControl.setRecipeModel(recipe);
-				recipeControl.setImage(recipe.getRecipe_picture_name());
+				recipeControl.setImage(recipe.getPhoto_name());
+				recipeControl.setImageURL(recipe.getPhoto());
 				recipeControl.setId(recipe.get_id());
 				recipeControl.setTitle(recipe.getRecipe_name());
 				mainTab.addView(recipeControl);
 				recipeControl.setSize(size);				
-				recipeControl.setCategory(recipe.getCategory());
+				recipeControl.setCategory(recipe.getRecipe_category_id());
 				recipeControls.add(recipeControl);
 			}
 		}
@@ -524,25 +574,21 @@ public class MainActivity extends Activity {
 		if (ingredientControls != null && !ingredientControls.isEmpty())
 			return;
 
-		ingredientControls = new ArrayList<IngredientControl>();
+		ingredientControls = new ArrayList<IngredientControl>();	
 
-		ArrayList<Ingredient> ingredients = new ArrayList<Ingredient>();
-
-		try {			
-			ingredients = IngredientDao.GetIngredients(db.getIngredients());
-		}catch(Exception e){
-
-		}
+		
 		for (Ingredient ingredient : ingredients)
 		{			
 			IngredientControl ingredientControl = new IngredientControl(this);	
 			ingredientControl.mainactivity = this;
 
-			ingredientControl.setImage(ingredient.getIngredient_picture_name());
+			//ingredientControl.setImage(ingredient.getImage_name());
+			
+			ingredientControl.setImageURL(ingredient.getIngredient_image());			
 			ingredientControl.setTitle(ingredient.getIngredient_name());
 			ingredientControl.setId(ingredient.get_id());		
 			ingredientControl.setSize(size);
-			ingredientControl.setCategory(ingredient.getCategory());
+			ingredientControl.setCategory(ingredient.getCategory_id());
 			ingredientControl.setLike(ingredient.getLike());
 			ingredientControls.add(ingredientControl);
 		}
@@ -602,8 +648,7 @@ public class MainActivity extends Activity {
 	}
 
 	public void SearchRecipe()
-	{
-		ArrayList<BridgeTable> bridgeTables = RecipeDao.GetBridgeTable(db.GetBridgeTable());
+	{	
 		ArrayList<IngredientControl> selectedI = new ArrayList<IngredientControl>();
 		int counter = 0;		
 
@@ -684,9 +729,14 @@ public class MainActivity extends Activity {
 		clearIngredients.setVisibility(View.GONE);
 
 		ImageView image = ((ImageView)findViewById(R.id.imgRecipeL));
-		Context context = image.getContext();
-		int id = context.getResources().getIdentifier(recipe.getRecipe_picture_name(), "drawable", context.getPackageName());		
-		image.setImageResource(id);
+		
+		/*
+		 * Context context = image.getContext();
+		 * int id = context.getResources().getIdentifier(recipe.getPhoto_name(), "drawable", context.getPackageName());		
+		 * image.setImageResource(id);
+		 */
+		
+		Picasso.with(this).load(recipe.getPhoto()).into(image);		
 
 		String listI = "Ingredient List:\n";
 
@@ -750,9 +800,11 @@ public class MainActivity extends Activity {
 				grid.getLayoutParams().height = (int)(sizeTile*1.2);
 				grid.requestLayout();
 
-				Context context = imageC.getContext();
+				
+				Picasso.with(this).load(ingredient.getPhoto_url()).into(imageC);					
+				/*Context context = imageC.getContext();
 				int id = context.getResources().getIdentifier(ingredient.getPhoto_name(), "drawable", context.getPackageName());		
-				imageC.setImageResource(id);
+				imageC.setImageResource(id);*/
 				imageC.getLayoutParams().width = (int) (sizeTile - (sizeTile*0.35));
 				imageC.getLayoutParams().height = (int) (sizeTile - (sizeTile*0.35));
 				imageC.requestLayout();		
@@ -765,7 +817,7 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();		
-		db.close();
+		//db.close();
 	}
 
 }

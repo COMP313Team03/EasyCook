@@ -6,7 +6,8 @@
     android:background="@drawable/appbackgroung"
     tools:context="${relativePackage}.${activityClass}" >
 
-    <LinearLayout
+    <LinearLayout    
+        android:visibility="gone"    
         android:id="@+id/relativeLayout1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -246,12 +247,12 @@
     </LinearLayout>
 
     <GridLayout
-        android:id="@+id/likeGrid"
+        android:id="@+id/likeGrid"        
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="fill"
         android:background="@color/blackback"
-        android:visibility="visible" >
+        android:visibility="gone" >
 
         <LinearLayout
             android:id="@+id/panelLike"
@@ -310,4 +311,29 @@
         </LinearLayout>
     </GridLayout>
 
+  	<GridLayout
+  	    android:id="@+id/loadingGrid"
+  	    android:layout_width="match_parent"
+  	    android:layout_height="match_parent"
+  	    android:background="@color/white"
+  	    android:columnCount="1"
+  	    android:minHeight="50dp"
+  	    android:minWidth="50dp" >
+
+  	    <ImageView
+  	        android:id="@+id/loading"
+  	        android:layout_column="0"
+  	        android:layout_gravity="center"
+  	        android:layout_row="0"
+  	        android:src="@drawable/ic_launcher" />
+
+  	    <TextView
+  	        android:id="@+id/loadingMessage"
+  	        android:layout_column="0"
+  	        android:layout_gravity="bottom|center"
+  	        android:layout_row="0"
+  	        android:textAppearance="?android:attr/textAppearanceSmall"
+  	        android:textSize="12sp" />
+  	</GridLayout>
+    
 </GridLayout>
