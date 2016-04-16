@@ -9,6 +9,7 @@ import com.squareup.picasso.Picasso;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.net.ConnectivityManager;
@@ -155,6 +156,25 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				_startSearchRecipe();
+			}			
+		});
+		
+		ImageButton searchRAdd = (ImageButton)findViewById(R.id.btnActionRRAdd);
+		searchRAdd.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(MainActivity.this, RecipeActivity.class);	
+				startActivity(intent);
+			}			
+		});
+		
+		ImageButton searchIAdd = (ImageButton)findViewById(R.id.btnActionRIAdd);
+		searchIAdd.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				//TODO
 			}			
 		});
 

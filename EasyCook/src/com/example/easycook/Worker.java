@@ -22,7 +22,7 @@ public class Worker extends Thread {
 			db = new EasyCookDBContext(main);	
 			
 			main.ingredients = IngredientDao.GetIngredients();
-			main.recipes = RecipeDao.GetIngredients();
+			main.recipes = RecipeDao.GetRecipes();
 			main.bridgeTables = RecipeDao.GetBridgeTable();
 			main.ingredientCategory = IngredientDao.GetIngredientCategory();			
 			main.recipeCategory = RecipeDao.GetRecipeCategory();

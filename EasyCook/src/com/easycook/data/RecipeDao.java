@@ -1,8 +1,10 @@
 package com.easycook.data;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -23,9 +25,8 @@ import android.database.Cursor;
 import android.util.Log;
 
 public class RecipeDao {
-	
-	public static ArrayList<Recipe> GetIngredients()
-	{
+
+	public static ArrayList<Recipe> GetRecipes() {
 		HttpURLConnection c = null;
 
 		try {
@@ -47,46 +48,111 @@ public class RecipeDao {
 				while ((line = br.readLine()) != null) {
 					sb.append(line + "\n");
 				}
-				br.close();	
-				RecipeRoot list = new Gson().fromJson(sb.toString(), RecipeRoot.class);				
+				br.close();
+				RecipeRoot list = new Gson().fromJson(sb.toString(), RecipeRoot.class);
 				return (ArrayList<Recipe>) list.getRecipes();
 			}
 
 		} catch (MalformedURLException ex) {
 			Log.d("DAO", ex.getMessage());
-			//Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+			// Logger.getLogger(getClass().getName()).log(Level.SEVERE, null,
+			// ex);
 		} catch (IOException ex) {
 			Log.d("DAO", ex.getMessage());
-			//Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+			// Logger.getLogger(getClass().getName()).log(Level.SEVERE, null,
+			// ex);
 		} finally {
 			if (c != null) {
 				try {
 					c.disconnect();
 				} catch (Exception ex) {
 					Log.d("DAO", ex.getMessage());
-					//Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+					// Logger.getLogger(getClass().getName()).log(Level.SEVERE,
+					// null, ex);
 				}
 			}
 		}
-		return  new ArrayList<Recipe>();		
-	}	
+		return new ArrayList<Recipe>();
+	}
 	
-	public static ArrayList<Recipe> GetIngredients(Cursor cursor)
-	{
+	public static boolean CreateRecipe(Recipe recipe) {
+
+		HttpURLConnection c = null;
+
+		try {
+			URL u = new URL("http://easycook.herokuapp.com/recipes");			
+			c = (HttpURLConnection) u.openConnection();
+			c.setRequestProperty("password", "easycook");
+			c.setRequestMethod("POST");
+			c.setUseCaches(false);
+			c.setRequestProperty("Content-Type", "application/json");
+			c.setAllowUserInteraction(false);
+			c.setInstanceFollowRedirects( false );
+			
+			Gson gson = new Gson();
+			String jsonData = gson.toJson(recipe);
+			
+			c.setDoOutput(true);
+		    OutputStreamWriter wr = new OutputStreamWriter(c.getOutputStream());
+		    wr.write(jsonData);
+		    wr.flush();			
+
+		    c.connect();
+			int status = c.getResponseCode();
+		    
+			Log.d("DATA", String.valueOf(status));		
+			
+			switch (status) {
+			case 200:
+			case 201:
+				BufferedReader br = new BufferedReader(new InputStreamReader(c.getInputStream()));
+				StringBuilder sb = new StringBuilder();
+				String line;
+				while ((line = br.readLine()) != null) {
+					sb.append(line + "\n");
+				}
+				br.close();
+				Recipe list = new Gson().fromJson(sb.toString(), Recipe.class);		
+				
+				Log.d("DATA", list.toString());
+				return true;
+			}
+
+		} catch (MalformedURLException ex) {
+			Log.d("DAO", ex.getMessage());
+			// Logger.getLogger(getClass().getName()).log(Level.SEVERE, null,
+			// ex);
+		} catch (IOException ex) {
+			Log.d("DAO", ex.getMessage());
+			// Logger.getLogger(getClass().getName()).log(Level.SEVERE, null,
+			// ex);
+		} finally {
+			if (c != null) {
+				try {
+					c.disconnect();
+				} catch (Exception ex) {
+					Log.d("DAO", ex.getMessage());
+					// Logger.getLogger(getClass().getName()).log(Level.SEVERE,
+					// null, ex);
+				}
+			}
+		}
+		
+		return false;
+	}
+
+	public static ArrayList<Recipe> GetIngredients(Cursor cursor) {
 		ArrayList<Recipe> recipes = new ArrayList<Recipe>();
 
-		if (cursor != null)
-		{
-			if ( cursor.moveToFirst())
-			{
-				do
-				{
+		if (cursor != null) {
+			if (cursor.moveToFirst()) {
+				do {
 					int _id = cursor.getInt(cursor.getColumnIndex("_id"));
-					int category_id = cursor.getInt(cursor.getColumnIndex("recipe_category_id"));					
-					String name = cursor.getString(cursor.getColumnIndex("recipe_name"));					
-					String image_name = cursor.getString(cursor.getColumnIndex("photo_name"));			
+					int category_id = cursor.getInt(cursor.getColumnIndex("recipe_category_id"));
+					String name = cursor.getString(cursor.getColumnIndex("recipe_name"));
+					String image_name = cursor.getString(cursor.getColumnIndex("photo_name"));
 					Recipe recipe = new Recipe();
-					recipe.set_id(_id);			    	    	
+					recipe.set_id(_id);
 					recipe.setRecipe_name(name);
 					recipe.setPhoto_name(image_name);
 					recipe.setDescription(cursor.getString(cursor.getColumnIndex("description")));
@@ -94,15 +160,15 @@ public class RecipeDao {
 					recipe.setRecipe_category_id(category_id);
 					recipes.add(recipe);
 
-				}while(cursor.moveToNext());
+				} while (cursor.moveToNext());
 			}
-		}		
+		}
 		cursor.close();
 		return recipes;
-	}	
-	
-	public static ArrayList<RecipeCategory> GetRecipeCategory(){
-		
+	}
+
+	public static ArrayList<RecipeCategory> GetRecipeCategory() {
+
 		HttpURLConnection c = null;
 
 		try {
@@ -124,57 +190,55 @@ public class RecipeDao {
 				while ((line = br.readLine()) != null) {
 					sb.append(line + "\n");
 				}
-				br.close();	
-				RecipeCategoryRoot list = new Gson().fromJson(sb.toString(), RecipeCategoryRoot.class);				
+				br.close();
+				RecipeCategoryRoot list = new Gson().fromJson(sb.toString(), RecipeCategoryRoot.class);
 				return (ArrayList<RecipeCategory>) list.getRecipeCategory();
 			}
 
 		} catch (MalformedURLException ex) {
 			Log.d("DAO", ex.getMessage());
-			//Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+			// Logger.getLogger(getClass().getName()).log(Level.SEVERE, null,
+			// ex);
 		} catch (IOException ex) {
 			Log.d("DAO", ex.getMessage());
-			//Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+			// Logger.getLogger(getClass().getName()).log(Level.SEVERE, null,
+			// ex);
 		} finally {
 			if (c != null) {
 				try {
 					c.disconnect();
 				} catch (Exception ex) {
 					Log.d("DAO", ex.getMessage());
-					//Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+					// Logger.getLogger(getClass().getName()).log(Level.SEVERE,
+					// null, ex);
 				}
 			}
 		}
-		return  new ArrayList<RecipeCategory>();			
+		return new ArrayList<RecipeCategory>();
 
-				
 	}
-	
-	public static ArrayList<RecipeCategory> GetRecipeCategory(Cursor cursor)
-	{
+
+	public static ArrayList<RecipeCategory> GetRecipeCategory(Cursor cursor) {
 		ArrayList<RecipeCategory> categories = new ArrayList<RecipeCategory>();
 
-		if (cursor != null)
-		{
-			if ( cursor.moveToFirst())
-			{
-				do
-				{
-					int _id = cursor.getInt(cursor.getColumnIndex("_id"));									
-					String name = cursor.getString(cursor.getColumnIndex("recipe_category_name"));					
+		if (cursor != null) {
+			if (cursor.moveToFirst()) {
+				do {
+					int _id = cursor.getInt(cursor.getColumnIndex("_id"));
+					String name = cursor.getString(cursor.getColumnIndex("recipe_category_name"));
 					RecipeCategory cat = new RecipeCategory();
 					cat.setName(name);
-					cat.set_id(_id);			    	    	
+					cat.set_id(_id);
 					categories.add(cat);
-				}while(cursor.moveToNext());
+				} while (cursor.moveToNext());
 			}
-		}			
+		}
 		cursor.close();
 		return categories;
-	}	
+	}
 
-	public static ArrayList<BridgeTable> GetBridgeTable(){
-		
+	public static ArrayList<BridgeTable> GetBridgeTable() {
+
 		HttpURLConnection c = null;
 
 		try {
@@ -196,57 +260,122 @@ public class RecipeDao {
 				while ((line = br.readLine()) != null) {
 					sb.append(line + "\n");
 				}
-				br.close();	
-				BridgeTableRoot list = new Gson().fromJson(sb.toString(), BridgeTableRoot.class);				
+				br.close();
+				BridgeTableRoot list = new Gson().fromJson(sb.toString(), BridgeTableRoot.class);
 				return (ArrayList<BridgeTable>) list.getBridgeTable();
 			}
 
 		} catch (MalformedURLException ex) {
 			Log.d("DAO", ex.getMessage());
-			//Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+			// Logger.getLogger(getClass().getName()).log(Level.SEVERE, null,
+			// ex);
 		} catch (IOException ex) {
 			Log.d("DAO", ex.getMessage());
-			//Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+			// Logger.getLogger(getClass().getName()).log(Level.SEVERE, null,
+			// ex);
 		} finally {
 			if (c != null) {
 				try {
 					c.disconnect();
 				} catch (Exception ex) {
 					Log.d("DAO", ex.getMessage());
-					//Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+					// Logger.getLogger(getClass().getName()).log(Level.SEVERE,
+					// null, ex);
 				}
 			}
 		}
-		return  new ArrayList<BridgeTable>();			
+		return new ArrayList<BridgeTable>();
 	}
-	
-	public static ArrayList<BridgeTable> GetBridgeTable(Cursor cursor)
-	{
+
+	public static boolean CreateBridgeTable(BridgeTable bridge) {
+
+		HttpURLConnection c = null;
+
+		try {
+			URL u = new URL("http://easycook.herokuapp.com/bridge");			
+			c = (HttpURLConnection) u.openConnection();
+			c.setRequestProperty("password", "easycook");
+			c.setRequestMethod("POST");			
+			c.setUseCaches(false);
+			c.setAllowUserInteraction(false);
+			c.setRequestProperty("Content-Type", "application/json");			
+			c.setInstanceFollowRedirects( false );			
+			
+			Gson gson = new Gson();
+			String jsonData = gson.toJson(bridge);
+			
+			c.setDoOutput(true);
+		    OutputStreamWriter wr = new OutputStreamWriter(c.getOutputStream());
+		    wr.write(jsonData);
+		    wr.flush();			
+		    
+		    c.connect();
+			int status = c.getResponseCode();
+			
+			Log.d("STATUS", String.valueOf(status));
+			Log.d("STATUS", c.getResponseMessage());
+			switch (status) {
+			case 200:
+			case 201:
+				BufferedReader br = new BufferedReader(new InputStreamReader(c.getInputStream()));
+				StringBuilder sb = new StringBuilder();
+				String line;
+				while ((line = br.readLine()) != null) {
+					sb.append(line + "\n");
+				}
+				br.close();
+				BridgeTable list = new Gson().fromJson(sb.toString(), BridgeTable.class);		
+				
+				Log.d("DATA", list.toString());
+				return true;
+			}
+
+		} catch (MalformedURLException ex) {
+			Log.d("DAO", ex.getMessage());
+			// Logger.getLogger(getClass().getName()).log(Level.SEVERE, null,
+			// ex);
+		} catch (IOException ex) {
+			Log.d("DAO", ex.getMessage());
+			// Logger.getLogger(getClass().getName()).log(Level.SEVERE, null,
+			// ex);
+		} finally {
+			if (c != null) {
+				try {
+					c.disconnect();
+				} catch (Exception ex) {
+					Log.d("DAO", ex.getMessage());
+					// Logger.getLogger(getClass().getName()).log(Level.SEVERE,
+					// null, ex);
+				}
+			}
+		}
+		
+		return false;
+	}
+
+	public static ArrayList<BridgeTable> GetBridgeTable(Cursor cursor) {
 		ArrayList<BridgeTable> bridgeTables = new ArrayList<BridgeTable>();
 
 		int i = 0;
-		
-		if (cursor != null)
-		{
-			if ( cursor.moveToFirst())
-			{
-				do
-				{
+
+		if (cursor != null) {
+			if (cursor.moveToFirst()) {
+				do {
 					int _id = cursor.getInt(cursor.getColumnIndex("_id"));
-					int ingredient_id = cursor.getInt(cursor.getColumnIndex("ingredient_id"));					
-					int recipe_id = cursor.getInt(cursor.getColumnIndex("recipe_id"));										
-					
+					int ingredient_id = cursor.getInt(cursor.getColumnIndex("ingredient_id"));
+					int recipe_id = cursor.getInt(cursor.getColumnIndex("recipe_id"));
+
 					BridgeTable bridgeTable = new BridgeTable();
-					bridgeTable.set_id(_id);			    	    	
+					bridgeTable.set_id(_id);
 					bridgeTable.setIngredient_id(ingredient_id);
 					bridgeTable.setRecipe_id(recipe_id);
 					bridgeTables.add(bridgeTable);
-					i++;				
+					i++;
 
-				}while(cursor.moveToNext());
+				} while (cursor.moveToNext());
 			}
-		}		
+		}
 		cursor.close();
 		return bridgeTables;
-	}	
+	}
 }
