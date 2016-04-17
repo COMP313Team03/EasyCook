@@ -9,25 +9,11 @@ public class Ingredient  {
 	
 	private int _id;
 	private String ingredient_name;
-	private String ingredient_picture_name; // wee need to add this to the table
-	private int ingredient_category_id;
+	private String ingredient_image;
+	private String image_name;
+	private int category_id;
 	private int like;
-	private int category;
-
-	public int getCategory() {
-		return category;
-	}
-
-	public void setCategory(int category) {
-		this.category = category;
-	}
 	
-	public int getLike() {
-		return like;
-	}
-	public void setLike(int like) {
-		this.like = like;
-	}
 	public int get_id() {
 		return _id;
 	}
@@ -40,16 +26,28 @@ public class Ingredient  {
 	public void setIngredient_name(String ingredient_name) {
 		this.ingredient_name = ingredient_name;
 	}
-	public String getIngredient_picture_name() {
-		return ingredient_picture_name;
+	public String getIngredient_image() {
+		return ingredient_image;
 	}
-	public void setIngredient_picture_name(String ingredient_picture_name) {
-		this.ingredient_picture_name = ingredient_picture_name;
+	public void setIngredient_image(String ingredient_image) {
+		this.ingredient_image = ingredient_image;
 	}
-	public int getIngredient_category_id() {
-		return ingredient_category_id;
+	public String getImage_name() {
+		return image_name;
 	}
-	public void setIngredient_category_id(int ingredient_category_id) {
-		this.ingredient_category_id = ingredient_category_id;
+	public void setImage_name(String image_name) {
+		this.image_name = image_name;
 	}
+	public int getCategory_id() {
+		return category_id;
+	}
+	public void setCategory_id(int category_id) {
+		this.category_id = category_id;
+	}
+	public int getLike() {
+		return like;
+	}
+	public void setLike(int like) {
+		this.like = like;
+	}	
 }

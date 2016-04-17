@@ -3,7 +3,7 @@ package com.easycook.models;
 public class RecipeCategory {
 
 	private int _id;
-	private String name;
+	private String ingredient_category_name;
 	
 	public int get_id() {
 		return _id;
@@ -12,10 +12,10 @@ public class RecipeCategory {
 		this._id = _id;
 	}
 	public String getName() {
-		return name;
+		return ingredient_category_name;
 	}
 	public void setName(String name) {
-		this.name = name;
+		this.ingredient_category_name = name;
 	}
 	
 }
