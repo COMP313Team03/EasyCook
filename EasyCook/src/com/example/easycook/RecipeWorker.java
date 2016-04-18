@@ -34,17 +34,14 @@ public class RecipeWorker extends Thread {
 
 			if (Action == "main") {
 				Log.e("THREAD", "INIT");
-
-				EasyCookDBContext db;
-				db = new EasyCookDBContext(main);
-
+				
 				main.ingredients = IngredientDao.GetIngredients();
 				main.recipes = RecipeDao.GetRecipes();
 				main.bridgeTables = RecipeDao.GetBridgeTable();
 				main.ingredientCategory = IngredientDao.GetIngredientCategory();
 				main.recipeCategory = RecipeDao.GetRecipeCategory();
 
-				db.close();
+				
 				Thread.sleep(1000);
 				main.Populate();
 

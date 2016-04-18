@@ -2,80 +2,54 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:background="@drawable/appbackgroung"
+    android:orientation="vertical" >
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal">
-
-        <TextView
+    <LinearLayout 
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical" >
+    
+    <TextView
+        android:id="@+id/ingredientNameTextView"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:text="Ingredient Name:"
-        android:id="@+id/textView" />
+        android:layout_height="wrap_content"
+        android:text="Ingredient Name:" />
 
-        <EditText
-            android:layout_width="322dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/editText" />
-    </LinearLayout>
+    <EditText
+        android:id="@+id/ingredientNameEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
+    <TextView
+        android:id="@+id/ingredientTypeTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Ingredient Type:" />
 
-    <LinearLayout
-        android:orientation="horizontal"
+    <Spinner
+        android:id="@+id/spinnerType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Upload Image:" />
+
+    <Button
+        android:id="@+id/ingredientImageButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal">
+        android:text="Browse Image" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:text="Select Ingredient Type:"
-            android:id="@+id/textView2" />
-
-        <Spinner
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/spinner"
-            android:layout_weight="1" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
+    <Button
+        android:id="@+id/ingredientSubmitButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal">
+        android:text="Save Ingredient" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:text="Upload Image:"
-            android:id="@+id/textView3" />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Browse Image"
-            android:id="@+id/button"
-            android:layout_weight="0.06" />
     </LinearLayout>
-
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_weight="0.01">
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Submit"
-            android:id="@+id/button2" />
-    </LinearLayout>
-
 </LinearLayout>

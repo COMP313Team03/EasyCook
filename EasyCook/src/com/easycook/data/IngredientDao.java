@@ -3,6 +3,7 @@ package com.easycook.data;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -20,6 +21,7 @@ import com.easycook.models.Ingredient;
 import com.easycook.models.IngredientCategory;
 import com.easycook.models.IngredientCategoryRoot;
 import com.easycook.models.IngredientRoot;
+import com.easycook.models.Recipe;
 import com.google.gson.Gson;
 
 public class IngredientDao {
@@ -28,7 +30,7 @@ public class IngredientDao {
 	static String[] ingredientBase = { "Chicken", "Tomato", "Beef", "Onion", "Eggs" };
 
 	public static ArrayList<Ingredient> GetIngredients() {
-	
+
 		HttpURLConnection c = null;
 
 		try {
@@ -50,33 +52,36 @@ public class IngredientDao {
 				while ((line = br.readLine()) != null) {
 					sb.append(line + "\n");
 				}
-				br.close();	
-				IngredientRoot list = new Gson().fromJson(sb.toString(), IngredientRoot.class);				
+				br.close();
+				IngredientRoot list = new Gson().fromJson(sb.toString(), IngredientRoot.class);
 				return (ArrayList<Ingredient>) list.getIngredients();
 			}
 
 		} catch (MalformedURLException ex) {
 			Log.d("DAO", ex.getMessage());
-			//Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+			// Logger.getLogger(getClass().getName()).log(Level.SEVERE, null,
+			// ex);
 		} catch (IOException ex) {
 			Log.d("DAO", ex.getMessage());
-			//Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+			// Logger.getLogger(getClass().getName()).log(Level.SEVERE, null,
+			// ex);
 		} finally {
 			if (c != null) {
 				try {
 					c.disconnect();
 				} catch (Exception ex) {
 					Log.d("DAO", ex.getMessage());
-					//Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+					// Logger.getLogger(getClass().getName()).log(Level.SEVERE,
+					// null, ex);
 				}
 			}
 		}
 
 		return new ArrayList<Ingredient>();
 	}
-	
+
 	public static ArrayList<Ingredient> GetIngredients(Cursor cursor) {
-		
+
 		ArrayList<Ingredient> ingredients = new ArrayList<Ingredient>();
 
 		if (cursor != null) {
@@ -100,11 +105,11 @@ public class IngredientDao {
 			}
 		}
 		cursor.close();
-		return ingredients;		 
+		return ingredients;
 	}
 
 	public static ArrayList<IngredientCategory> GetIngredientCategory() {
-		
+
 		HttpURLConnection c = null;
 
 		try {
@@ -126,31 +131,34 @@ public class IngredientDao {
 				while ((line = br.readLine()) != null) {
 					sb.append(line + "\n");
 				}
-				br.close();	
-				IngredientCategoryRoot list = new Gson().fromJson(sb.toString(), IngredientCategoryRoot.class);				
+				br.close();
+				IngredientCategoryRoot list = new Gson().fromJson(sb.toString(), IngredientCategoryRoot.class);
 				return (ArrayList<IngredientCategory>) list.getIngredientCategory();
 			}
 
 		} catch (MalformedURLException ex) {
 			Log.d("DAO", ex.getMessage());
-			//Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+			// Logger.getLogger(getClass().getName()).log(Level.SEVERE, null,
+			// ex);
 		} catch (IOException ex) {
 			Log.d("DAO", ex.getMessage());
-			//Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+			// Logger.getLogger(getClass().getName()).log(Level.SEVERE, null,
+			// ex);
 		} finally {
 			if (c != null) {
 				try {
 					c.disconnect();
 				} catch (Exception ex) {
 					Log.d("DAO", ex.getMessage());
-					//Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+					// Logger.getLogger(getClass().getName()).log(Level.SEVERE,
+					// null, ex);
 				}
 			}
 		}
 
 		return new ArrayList<IngredientCategory>();
 	}
-	
+
 	public static ArrayList<IngredientCategory> GetIngredientCategory(Cursor cursor) {
 		ArrayList<IngredientCategory> categories = new ArrayList<IngredientCategory>();
 
@@ -168,6 +176,73 @@ public class IngredientDao {
 		}
 		cursor.close();
 		return categories;
+	}
+
+	public static boolean CreateIngredient(Ingredient newIngredient) {
+		
+		HttpURLConnection c = null;
+
+		try {
+			URL u = new URL("http://easycook.herokuapp.com/ingredients");			
+			c = (HttpURLConnection) u.openConnection();
+			c.setRequestProperty("password", "easycook");
+			c.setRequestMethod("POST");
+			c.setUseCaches(false);
+			c.setRequestProperty("Content-Type", "application/json");
+			c.setAllowUserInteraction(false);
+			c.setInstanceFollowRedirects( false );
+			
+			Gson gson = new Gson();
+			String jsonData = gson.toJson(newIngredient);
+			
+			c.setDoOutput(true);
+		    OutputStreamWriter wr = new OutputStreamWriter(c.getOutputStream());
+		    wr.write(jsonData);
+		    wr.flush();			
+
+		    c.connect();
+			int status = c.getResponseCode();
+		    
+			Log.d("DATA", String.valueOf(status));		
+			
+			switch (status) {
+			case 200:
+			case 201:
+				BufferedReader br = new BufferedReader(new InputStreamReader(c.getInputStream()));
+				StringBuilder sb = new StringBuilder();
+				String line;
+				while ((line = br.readLine()) != null) {
+					sb.append(line + "\n");
+				}
+				br.close();
+				Ingredient list = new Gson().fromJson(sb.toString(), Ingredient.class);		
+				
+				Log.d("DATA", list.toString());
+				return true;
+			}
+
+		} catch (MalformedURLException ex) {
+			Log.d("DAO", ex.getMessage());
+			// Logger.getLogger(getClass().getName()).log(Level.SEVERE, null,
+			// ex);
+		} catch (IOException ex) {
+			Log.d("DAO", ex.getMessage());
+			// Logger.getLogger(getClass().getName()).log(Level.SEVERE, null,
+			// ex);
+		} finally {
+			if (c != null) {
+				try {
+					c.disconnect();
+				} catch (Exception ex) {
+					Log.d("DAO", ex.getMessage());
+					// Logger.getLogger(getClass().getName()).log(Level.SEVERE,
+					// null, ex);
+				}
+			}
+		}
+		
+		return false;
+
 	}
 
 	/*
@@ -188,4 +263,5 @@ public class IngredientDao {
 		}
 		return ingredients;
 	}
+
 }

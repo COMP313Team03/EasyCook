@@ -32,23 +32,23 @@ import android.widget.TextView;
 import android.widget.TabHost.TabContentFactory;
 import android.widget.TabHost.TabSpec;
 
-public class MainActivity extends Activity {	
+public class MainActivity extends Activity {
 
 	ArrayList<IngredientControl> ingredientControls;
-	ArrayList<RecipeControl> recipeControls;	
-	
+	ArrayList<RecipeControl> recipeControls;
+
 	public ArrayList<Ingredient> ingredients = new ArrayList<Ingredient>();
 	public ArrayList<Recipe> recipes = new ArrayList<Recipe>();
 	ArrayList<BridgeTable> bridgeTables;
-	
-	public ArrayList<RecipeCategory> recipeCategory;	
+
+	public ArrayList<RecipeCategory> recipeCategory;
 	public ArrayList<IngredientCategory> ingredientCategory;
-	
+
 	private Button clearIngredients;
 	boolean created = false;
 	int sizeTile = 0;
 
-	String clear_status = "normal"; 
+	String clear_status = "normal";
 
 	@SuppressLint("ResourceAsColor")
 	@Override
@@ -59,80 +59,90 @@ public class MainActivity extends Activity {
 		Display display = getWindowManager().getDefaultDisplay();
 		Point size = new Point();
 		display.getSize(size);
-		
-		if (size.x/4 >= 30) 
-			sizeTile = size.x/4;
+
+		if (size.x / 4 >= 30)
+			sizeTile = size.x / 4;
 
 		_createTabControl();
-		
+
 		this.runOnUiThread(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				int counter = 0;
 				do {
-					
-					if (isNetworkAvailable())
-					{
+
+					if (isNetworkAvailable()) {
 						Worker worker = new Worker();
 						worker.main = MainActivity.this;
 						worker.start();
 						counter = 3;
-					}
-					else
-					{
+					} else {
 						counter++;
 						try {
 							Thread.sleep(2000);
 						} catch (InterruptedException e) {
-							
+
 						}
 						ShowMessage("No Network ");
 					}
-				}while(counter < 3);
-				
+				} while (counter < 3);
+
 			}
 		});
 	}
-	
-	public void ShowMessage(String message)
-	{
-		((TextView)findViewById(R.id.loadingMessage)).setText(message);
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		
+		Log.d("RESULT", String.valueOf(resultCode));
+
+		((LinearLayout) MainActivity.this.findViewById(R.id.relativeLayout1)).setVisibility(View.VISIBLE);
+		((GridLayout) MainActivity.this.findViewById(R.id.likeGrid)).setVisibility(View.VISIBLE);
+		((GridLayout) MainActivity.this.findViewById(R.id.loadingGrid)).setVisibility(View.GONE);
+		
+		Worker worker = new Worker();
+		worker.main = MainActivity.this;
+		worker.start();
+
 	}
-	
+
+	public void ShowMessage(String message) {
+		((TextView) findViewById(R.id.loadingMessage)).setText(message);
+	}
+
 	public boolean isNetworkAvailable() {
-		ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService( Context.CONNECTIVITY_SERVICE);	    
-	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-	    return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+		ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+		return activeNetworkInfo != null && activeNetworkInfo.isConnected();
 	}
-	
-	public void StartAPP()
-	{
-		this.runOnUiThread(new Runnable() {			
+
+	public void StartAPP() {
+		this.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				InitApplication();	
-				((LinearLayout)findViewById(R.id.relativeLayout1)).setVisibility(View.VISIBLE);
-				((GridLayout)findViewById(R.id.likeGrid)).setVisibility(View.VISIBLE);
-				((GridLayout)findViewById(R.id.loadingGrid)).setVisibility(View.GONE);
+				InitApplication();
+				((LinearLayout) findViewById(R.id.relativeLayout1)).setVisibility(View.VISIBLE);
+				((GridLayout) findViewById(R.id.likeGrid)).setVisibility(View.VISIBLE);
+				((GridLayout) findViewById(R.id.loadingGrid)).setVisibility(View.GONE);
 			}
 		});
 	}
 
-	public void InitApplication()
-	{
-		GridLayout grid = (GridLayout)findViewById(R.id.likeGrid);		
-		GridLayout parent = (GridLayout)grid.getParent();
+	public void InitApplication() {
+		GridLayout grid = (GridLayout) findViewById(R.id.likeGrid);
+		GridLayout parent = (GridLayout) grid.getParent();
 		parent.removeView(grid);
-		parent.addView(grid);		 
+		parent.addView(grid);
 
-		_populateIngredients(sizeTile);	
+		_populateIngredients(sizeTile);
 
 		_populateRecipes(sizeTile);
 
 		created = true;
 
-		ImageButton searchI = (ImageButton)findViewById(R.id.btnActionRI);
+		ImageButton searchI = (ImageButton) findViewById(R.id.btnActionRI);
 		searchI.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -141,150 +151,140 @@ public class MainActivity extends Activity {
 			}
 		});
 
-		ImageButton backI = (ImageButton)findViewById(R.id.btnActionLI);
+		ImageButton backI = (ImageButton) findViewById(R.id.btnActionLI);
 		backI.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				_leftButtonIngredientsAction();				
+				_leftButtonIngredientsAction();
 			}
 		});
 
-		ImageButton searchR = (ImageButton)findViewById(R.id.btnActionRR);
+		ImageButton searchR = (ImageButton) findViewById(R.id.btnActionRR);
 		searchR.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 				_startSearchRecipe();
-			}			
+			}
 		});
-		
-		ImageButton searchRAdd = (ImageButton)findViewById(R.id.btnActionRRAdd);
+
+		ImageButton searchRAdd = (ImageButton) findViewById(R.id.btnActionRRAdd);
 		searchRAdd.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(MainActivity.this, RecipeActivity.class);	
-				startActivity(intent);
-			}			
+				Intent intent = new Intent(MainActivity.this, RecipeActivity.class);
+				startActivityForResult(intent, 0);
+			}
 		});
-		
-		ImageButton searchIAdd = (ImageButton)findViewById(R.id.btnActionRIAdd);
+
+		ImageButton searchIAdd = (ImageButton) findViewById(R.id.btnActionRIAdd);
 		searchIAdd.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				//TODO
-			}			
+				Intent intent = new Intent(MainActivity.this, IngredientActivity.class);
+				startActivityForResult(intent, 0);
+			}
 		});
 
-		ImageButton backR = (ImageButton)findViewById(R.id.btnActionLR);
+		ImageButton backR = (ImageButton) findViewById(R.id.btnActionLR);
 		backR.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				_leftButtonRecipesAction();				
+				_leftButtonRecipesAction();
 			}
 		});
 
-		clearIngredients = (Button)findViewById(R.id.buttonClear);
+		clearIngredients = (Button) findViewById(R.id.buttonClear);
 		clearIngredients.setText("CLEAR");
-		clearIngredients.setOnClickListener(new OnClickListener() {			
+		clearIngredients.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (clear_status == "normal")
-				{
-					for(IngredientControl ingredientC : ingredientControls)
-						ingredientC.SelectIngredient(false);				
+				if (clear_status == "normal") {
+					for (IngredientControl ingredientC : ingredientControls)
+						ingredientC.SelectIngredient(false);
 					SearchRecipe();
-				}
-				else if (clear_status == "category")
-				{
+				} else if (clear_status == "category") {
 					clearIngredients.setVisibility(View.GONE);
-					
-					for(IngredientControl ingredientC : ingredientControls)
-					{
-						if (ingredientC.isSelected())
-						{
+
+					for (IngredientControl ingredientC : ingredientControls) {
+						if (ingredientC.isSelected()) {
 							clearIngredients.setVisibility(View.VISIBLE);
 						}
 						ingredientC.setVisibility(View.VISIBLE);
 						_populateIngredientTab(sizeTile);
 					}
-					
+
 					clear_status = "normal";
 				}
 			}
 		});
 
-		((GridLayout)findViewById(R.id.likeGrid)).setOnClickListener(new OnClickListener() {
+		((GridLayout) findViewById(R.id.likeGrid)).setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				((GridLayout)findViewById(R.id.likeGrid)).setVisibility(View.GONE);
-				((LinearLayout)findViewById(R.id.relativeLayout1)).setVisibility(View.VISIBLE);	
-				for (IngredientControl ingredient : ingredientControls)
-				{				
-					if (ingredient.isOnLikeOption())
-					{
+				((GridLayout) findViewById(R.id.likeGrid)).setVisibility(View.GONE);
+				((LinearLayout) findViewById(R.id.relativeLayout1)).setVisibility(View.VISIBLE);
+				for (IngredientControl ingredient : ingredientControls) {
+					if (ingredient.isOnLikeOption()) {
 						ingredient.setOnLikeOption(false);
-					}				
+					}
 				}
 			}
 		});
 
-		((Button)findViewById(R.id.buttonFavorite)).setOnClickListener(new OnClickListener() {
+		((Button) findViewById(R.id.buttonFavorite)).setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 
-				for (IngredientControl ingredient : ingredientControls)
-				{			
-					if (ingredient.isOnLikeOption())
-					{					
+				for (IngredientControl ingredient : ingredientControls) {
+					if (ingredient.isOnLikeOption()) {
 						ingredient.SetLikeIngredient(1);
 						ingredient.setOnLikeOption(false);
-						//db.UpdateLikeIngredient(ingredient.getId(), ingredient.getLike());
-					}				
+						// db.UpdateLikeIngredient(ingredient.getId(),
+						// ingredient.getLike());
+					}
 				}
-				((GridLayout)findViewById(R.id.likeGrid)).setVisibility(View.GONE);
-				((LinearLayout)findViewById(R.id.relativeLayout1)).setVisibility(View.VISIBLE);	
+				((GridLayout) findViewById(R.id.likeGrid)).setVisibility(View.GONE);
+				((LinearLayout) findViewById(R.id.relativeLayout1)).setVisibility(View.VISIBLE);
 			}
 		});
 
-		((Button)findViewById(R.id.buttonExclude)).setOnClickListener(new OnClickListener() {
+		((Button) findViewById(R.id.buttonExclude)).setOnClickListener(new OnClickListener() {
 
 			@Override
-			public void onClick(View v) {					
-				for (IngredientControl ingredient : ingredientControls)
-				{				
-					if (ingredient.isOnLikeOption())
-					{	
+			public void onClick(View v) {
+				for (IngredientControl ingredient : ingredientControls) {
+					if (ingredient.isOnLikeOption()) {
 						ingredient.SetLikeIngredient(-1);
 						ingredient.setOnLikeOption(false);
-						//db.UpdateLikeIngredient(ingredient.getId(), ingredient.getLike());
-					}				
+						// db.UpdateLikeIngredient(ingredient.getId(),
+						// ingredient.getLike());
+					}
 				}
-				((GridLayout)findViewById(R.id.likeGrid)).setVisibility(View.GONE);
-				((LinearLayout)findViewById(R.id.relativeLayout1)).setVisibility(View.VISIBLE);
+				((GridLayout) findViewById(R.id.likeGrid)).setVisibility(View.GONE);
+				((LinearLayout) findViewById(R.id.relativeLayout1)).setVisibility(View.VISIBLE);
 			}
 		});
 
-
-		Button clearRecipes = (Button)findViewById(R.id.buttonBackRecipes);
+		Button clearRecipes = (Button) findViewById(R.id.buttonBackRecipes);
 		clearRecipes.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				LinearLayout mainTab = (LinearLayout)findViewById(R.id.tab2);
+				LinearLayout mainTab = (LinearLayout) findViewById(R.id.tab2);
 				mainTab.setVisibility(View.VISIBLE);
-				LinearLayout mainTabR = (LinearLayout)findViewById(R.id.tabR2);
+				LinearLayout mainTabR = (LinearLayout) findViewById(R.id.tabR2);
 				mainTabR.setVisibility(View.GONE);
 
-				((Button)findViewById(R.id.buttonBackRecipes)).setVisibility(View.GONE);
+				((Button) findViewById(R.id.buttonBackRecipes)).setVisibility(View.GONE);
 
-				for (IngredientControl ingredient : ingredientControls)
-				{				
+				for (IngredientControl ingredient : ingredientControls) {
 					if (ingredient.isSelected())
 						clearIngredients.setVisibility(View.VISIBLE);
 				}
@@ -292,12 +292,13 @@ public class MainActivity extends Activity {
 			}
 		});
 
-		//for (IngredientCategory cat : IngredientDao.GetIngredientCategory(db.GetIngredientCategory()))
-		for (IngredientCategory cat : ingredientCategory)		
-		{			
+		// for (IngredientCategory cat :
+		// IngredientDao.GetIngredientCategory(db.GetIngredientCategory()))
+		for (IngredientCategory cat : ingredientCategory) {
 			Button category = new Button(this);
 
-			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+					LinearLayout.LayoutParams.WRAP_CONTENT);
 			lp.setMargins(5, 5, 5, 5);
 			category.setLayoutParams(lp);
 			category.setText(cat.getName());
@@ -309,37 +310,34 @@ public class MainActivity extends Activity {
 				@Override
 				public void onClick(View v) {
 
-					Button b = (Button)v;					
+					Button b = (Button) v;
 
-					for (IngredientControl ingredient : ingredientControls)
-					{		
-						if (b.getTag().toString() == String.valueOf(ingredient.getCategory()))
-						{
-							ingredient.setVisibility(View.VISIBLE);								
-						}
-						else							
-						{
+					for (IngredientControl ingredient : ingredientControls) {
+						if (b.getTag().toString() == String.valueOf(ingredient.getCategory())) {
+							ingredient.setVisibility(View.VISIBLE);
+						} else {
 							ingredient.setVisibility(View.GONE);
 						}
 					}
 
-					((LinearLayout)findViewById(R.id.tabICategory)).setVisibility(View.GONE);
-					((LinearLayout)findViewById(R.id.tab1)).setVisibility(View.VISIBLE);
+					((LinearLayout) findViewById(R.id.tabICategory)).setVisibility(View.GONE);
+					((LinearLayout) findViewById(R.id.tab1)).setVisibility(View.VISIBLE);
 					clearIngredients.setVisibility(View.VISIBLE);
 					clear_status = "category";
 					_populateIngredientTab(sizeTile);
 				}
 			});
 
-			((LinearLayout)findViewById(R.id.tabICategory)).addView(category);
+			((LinearLayout) findViewById(R.id.tabICategory)).addView(category);
 		}
-		
-		//for (RecipeCategory cat : RecipeDao.GetRecipeCategory(db.GetRecipeCategory()))
-	    for (RecipeCategory cat : recipeCategory)
-		{			
+
+		// for (RecipeCategory cat :
+		// RecipeDao.GetRecipeCategory(db.GetRecipeCategory()))
+		for (RecipeCategory cat : recipeCategory) {
 			Button category = new Button(this);
 
-			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+					LinearLayout.LayoutParams.WRAP_CONTENT);
 			lp.setMargins(5, 5, 5, 5);
 			category.setLayoutParams(lp);
 			category.setText(cat.getName());
@@ -351,205 +349,171 @@ public class MainActivity extends Activity {
 				@Override
 				public void onClick(View v) {
 
-					Button b = (Button)v;					
+					Button b = (Button) v;
 
-					for (RecipeControl recipe : recipeControls)
-					{		
-						if (b.getTag().toString() == String.valueOf(recipe.getCategory()) && recipe.isFilter())
-						{
-							recipe.setVisibility(View.VISIBLE);								
-						}
-						else							
-						{
+					for (RecipeControl recipe : recipeControls) {
+						if (b.getTag().toString() == String.valueOf(recipe.getCategory()) && recipe.isFilter()) {
+							recipe.setVisibility(View.VISIBLE);
+						} else {
 							recipe.setVisibility(View.GONE);
 						}
 					}
 
-					((LinearLayout)findViewById(R.id.tabRCategory)).setVisibility(View.GONE);
-					((LinearLayout)findViewById(R.id.tab2)).setVisibility(View.VISIBLE);
+					((LinearLayout) findViewById(R.id.tabRCategory)).setVisibility(View.GONE);
+					((LinearLayout) findViewById(R.id.tab2)).setVisibility(View.VISIBLE);
 					clearIngredients.setVisibility(View.VISIBLE);
-					clear_status = "category_recipe";					
+					clear_status = "category_recipe";
 				}
 			});
 
-			((LinearLayout)findViewById(R.id.tabRCategory)).addView(category);
+			((LinearLayout) findViewById(R.id.tabRCategory)).addView(category);
 		}
-		
-	}
-	
-	private void _leftButtonIngredientsAction()
-	{
-		EditText editText = (EditText)findViewById(R.id.txtSearchI);
 
-		if (editText.getVisibility() == View.VISIBLE)
-		{
+	}
+
+	private void _leftButtonIngredientsAction() {
+		EditText editText = (EditText) findViewById(R.id.txtSearchI);
+
+		if (editText.getVisibility() == View.VISIBLE) {
 			editText.setVisibility(View.INVISIBLE);
 			editText.setText("");
-			for (IngredientControl ingredient : ingredientControls)
-			{
+			for (IngredientControl ingredient : ingredientControls) {
 				ingredient.setVisibility(View.VISIBLE);
 				if (ingredient.isSelected())
 					clearIngredients.setVisibility(View.VISIBLE);
 			}
 			_populateIngredientTab(sizeTile);
-		}
-		else if (((LinearLayout)findViewById(R.id.tabICategory)).getVisibility() == View.GONE)
-		{
-			((LinearLayout)findViewById(R.id.tab1)).setVisibility(View.GONE);
-			((LinearLayout)findViewById(R.id.tabICategory)).setVisibility(View.VISIBLE);			
-		}
-		else
-		{
-			((LinearLayout)findViewById(R.id.tabICategory)).setVisibility(View.GONE);
-			((LinearLayout)findViewById(R.id.tab1)).setVisibility(View.VISIBLE);
+		} else if (((LinearLayout) findViewById(R.id.tabICategory)).getVisibility() == View.GONE) {
+			((LinearLayout) findViewById(R.id.tab1)).setVisibility(View.GONE);
+			((LinearLayout) findViewById(R.id.tabICategory)).setVisibility(View.VISIBLE);
+		} else {
+			((LinearLayout) findViewById(R.id.tabICategory)).setVisibility(View.GONE);
+			((LinearLayout) findViewById(R.id.tab1)).setVisibility(View.VISIBLE);
 		}
 	}
 
-	private void _startSearchIngredient()
-	{
-		EditText editText = (EditText)findViewById(R.id.txtSearchI);
+	private void _startSearchIngredient() {
+		EditText editText = (EditText) findViewById(R.id.txtSearchI);
 
 		if (clearIngredients.getVisibility() == View.VISIBLE)
-			clearIngredients.setVisibility(View.GONE);		
+			clearIngredients.setVisibility(View.GONE);
 
-		if (editText.getVisibility() == View.VISIBLE)
-		{
+		if (editText.getVisibility() == View.VISIBLE) {
 			_cleanIngredients();
-			_searchIngredient(editText.getText().toString());			
+			_searchIngredient(editText.getText().toString());
 			_populateIngredientTab(sizeTile);
-		}
-		else
-		{
+		} else {
 			_cleanIngredients();
 			editText.setVisibility(View.VISIBLE);
-		}		
+		}
 	}
 
-	private void _leftButtonRecipesAction()
-	{
-		EditText editText = (EditText)findViewById(R.id.txtSearchR);
+	private void _leftButtonRecipesAction() {
+		EditText editText = (EditText) findViewById(R.id.txtSearchR);
 
-		if (editText.getVisibility() == View.VISIBLE)
-		{
+		if (editText.getVisibility() == View.VISIBLE) {
 			editText.setVisibility(View.INVISIBLE);
 			editText.setText("");
-			for (RecipeControl recipe : recipeControls)
-			{
+			for (RecipeControl recipe : recipeControls) {
 				if (recipe.isFilter())
-					recipe.setVisibility(View.VISIBLE);				
-			}	
+					recipe.setVisibility(View.VISIBLE);
+			}
 
-			for (IngredientControl ingredient : ingredientControls)
-			{				
+			for (IngredientControl ingredient : ingredientControls) {
 				if (ingredient.isSelected())
 					clearIngredients.setVisibility(View.VISIBLE);
 			}
 		}
 		/*
-		else if (((LinearLayout)findViewById(R.id.tabRCategory)).getVisibility() == View.GONE 
-				&& ((LinearLayout)findViewById(R.id.tabR2)).getVisibility() != View.VISIBLE)
-		{
-			((LinearLayout)findViewById(R.id.tab2)).setVisibility(View.GONE);
-			((LinearLayout)findViewById(R.id.tabRCategory)).setVisibility(View.VISIBLE);			
-		}
-		else if (((LinearLayout)findViewById(R.id.tabR2)).getVisibility() != View.VISIBLE)
-		{
-			((LinearLayout)findViewById(R.id.tabRCategory)).setVisibility(View.GONE);
-			((LinearLayout)findViewById(R.id.tab2)).setVisibility(View.VISIBLE);
-		}
-		*/
+		 * else if
+		 * (((LinearLayout)findViewById(R.id.tabRCategory)).getVisibility() ==
+		 * View.GONE && ((LinearLayout)findViewById(R.id.tabR2)).getVisibility()
+		 * != View.VISIBLE) {
+		 * ((LinearLayout)findViewById(R.id.tab2)).setVisibility(View.GONE);
+		 * ((LinearLayout)findViewById(R.id.tabRCategory)).setVisibility(View.
+		 * VISIBLE); } else if
+		 * (((LinearLayout)findViewById(R.id.tabR2)).getVisibility() !=
+		 * View.VISIBLE) {
+		 * ((LinearLayout)findViewById(R.id.tabRCategory)).setVisibility(View.
+		 * GONE);
+		 * ((LinearLayout)findViewById(R.id.tab2)).setVisibility(View.VISIBLE);
+		 * }
+		 */
 	}
 
-	private void _startSearchRecipe()
-	{
-		EditText editText = (EditText)findViewById(R.id.txtSearchR);
+	private void _startSearchRecipe() {
+		EditText editText = (EditText) findViewById(R.id.txtSearchR);
 
 		if (clearIngredients.getVisibility() == View.VISIBLE)
-			clearIngredients.setVisibility(View.GONE);		
+			clearIngredients.setVisibility(View.GONE);
 
-		if (editText.getVisibility() == View.VISIBLE)
-		{
+		if (editText.getVisibility() == View.VISIBLE) {
 			_cleanRecipes();
 			_searchRecipe(editText.getText().toString());
-		}
-		else
-		{
+		} else {
 			_cleanRecipes();
 			editText.setVisibility(View.VISIBLE);
-		}		
+		}
 	}
 
 	@SuppressLint("DefaultLocale")
-	private void _searchIngredient(String searchValue)
-	{
+	private void _searchIngredient(String searchValue) {
 		if (searchValue.isEmpty())
 			return;
 
-		for (IngredientControl ingredient : ingredientControls)
-		{
-			if (ingredient.getTitle().toLowerCase().contains(searchValue.toLowerCase()))			
+		for (IngredientControl ingredient : ingredientControls) {
+			if (ingredient.getTitle().toLowerCase().contains(searchValue.toLowerCase()))
 				ingredient.setVisibility(View.VISIBLE);
 		}
 	}
 
-	private void _searchRecipe(String searchValue)
-	{
+	private void _searchRecipe(String searchValue) {
 		if (searchValue.isEmpty())
 			return;
 
-		for (RecipeControl recipe : recipeControls)
-		{
-			if (recipe.getTitle().toLowerCase().contains(searchValue.toLowerCase()) && recipe.isFilter())			
+		for (RecipeControl recipe : recipeControls) {
+			if (recipe.getTitle().toLowerCase().contains(searchValue.toLowerCase()) && recipe.isFilter())
 				recipe.setVisibility(View.VISIBLE);
 		}
 	}
 
-	private void _cleanIngredients()
-	{
-		for (IngredientControl ingredient : ingredientControls)
-		{
+	private void _cleanIngredients() {
+		for (IngredientControl ingredient : ingredientControls) {
 			ingredient.setVisibility(View.GONE);
 		}
 	}
 
-	private void _cleanRecipes()
-	{
-		for (RecipeControl recipe : recipeControls)
-		{
+	private void _cleanRecipes() {
+		for (RecipeControl recipe : recipeControls) {
 			recipe.setVisibility(View.GONE);
 		}
 	}
 
-	private void _populateIngredientTab(int size)
-	{
-		LinearLayout mainTab = (LinearLayout)findViewById(R.id.tab1);
-		LinearLayout linearLayout = new LinearLayout(this);	
+	private void _populateIngredientTab(int size) {
+		LinearLayout mainTab = (LinearLayout) findViewById(R.id.tab1);
+		LinearLayout linearLayout = new LinearLayout(this);
 		linearLayout.setOrientation(LinearLayout.HORIZONTAL);
 		mainTab.addView(linearLayout);
 		int i = 0;
 
-		for (IngredientControl ingredient : ingredientControls)
-		{
-			LinearLayout parent = (LinearLayout)ingredient.getParent();
+		for (IngredientControl ingredient : ingredientControls) {
+			LinearLayout parent = (LinearLayout) ingredient.getParent();
 
-			if (parent != null)
-			{
+			if (parent != null) {
 				parent.removeView(ingredient);
 
 				if (parent.getChildCount() == 0)
-					((LinearLayout)parent.getParent()).removeView(parent);
+					((LinearLayout) parent.getParent()).removeView(parent);
 			}
 
-			if (ingredient.getVisibility() == View.VISIBLE)
-			{
+			if (ingredient.getVisibility() == View.VISIBLE) {
 				linearLayout.addView(ingredient);
 				ingredient.setSize(size);
 				i++;
 			}
 
-			if (i == 4)
-			{
-				linearLayout = new LinearLayout(this);	
+			if (i == 4) {
+				linearLayout = new LinearLayout(this);
 				linearLayout.setOrientation(LinearLayout.HORIZONTAL);
 				mainTab.addView(linearLayout);
 				i = 0;
@@ -561,52 +525,45 @@ public class MainActivity extends Activity {
 
 		if (recipeControls != null && !recipeControls.isEmpty())
 			return;
-		
-		LinearLayout mainTab = (LinearLayout)findViewById(R.id.tab2);		
+
+		LinearLayout mainTab = (LinearLayout) findViewById(R.id.tab2);
 
 		recipeControls = new ArrayList<RecipeControl>();
 
-		try
-		{
-			for (Recipe recipe : recipes)
-			{			
-				RecipeControl recipeControl = new RecipeControl(this);	
-				recipeControl.mainactivity = this;	
+		try {
+			for (Recipe recipe : recipes) {
+				RecipeControl recipeControl = new RecipeControl(this);
+				recipeControl.mainactivity = this;
 				recipeControl.setRecipeModel(recipe);
 				recipeControl.setImage(recipe.getPhoto_name());
 				recipeControl.setImageURL(recipe.getPhoto());
 				recipeControl.setId(recipe.get_id());
 				recipeControl.setTitle(recipe.getRecipe_name());
 				mainTab.addView(recipeControl);
-				recipeControl.setSize(size);				
+				recipeControl.setSize(size);
 				recipeControl.setCategory(recipe.getRecipe_category_id());
 				recipeControls.add(recipeControl);
 			}
-		}
-		catch(Exception e)
-		{			
+		} catch (Exception e) {
 
 		}
 	}
 
-	private void _populateIngredients(int size)
-	{
+	private void _populateIngredients(int size) {
 		if (ingredientControls != null && !ingredientControls.isEmpty())
 			return;
 
-		ingredientControls = new ArrayList<IngredientControl>();	
+		ingredientControls = new ArrayList<IngredientControl>();
 
-		
-		for (Ingredient ingredient : ingredients)
-		{			
-			IngredientControl ingredientControl = new IngredientControl(this);	
+		for (Ingredient ingredient : ingredients) {
+			IngredientControl ingredientControl = new IngredientControl(this);
 			ingredientControl.mainactivity = this;
 
-			//ingredientControl.setImage(ingredient.getImage_name());
-			
-			ingredientControl.setImageURL(ingredient.getIngredient_image());			
+			// ingredientControl.setImage(ingredient.getImage_name());
+
+			ingredientControl.setImageURL(ingredient.getIngredient_image());
 			ingredientControl.setTitle(ingredient.getIngredient_name());
-			ingredientControl.setId(ingredient.get_id());		
+			ingredientControl.setId(ingredient.get_id());
 			ingredientControl.setSize(size);
 			ingredientControl.setCategory(ingredient.getCategory_id());
 			ingredientControl.setLike(ingredient.getLike());
@@ -616,8 +573,7 @@ public class MainActivity extends Activity {
 		_populateIngredientTab(size);
 	}
 
-	private void _createTabControl()
-	{
+	private void _createTabControl() {
 		if (created)
 			return;
 
@@ -655,31 +611,25 @@ public class MainActivity extends Activity {
 				}
 			});
 
-			if (tabWidgetTextView.getBackground() == null) 
-			{
+			if (tabWidgetTextView.getBackground() == null) {
 				tabSpec.setIndicator(tabWidgetTextView.getText());
-			} 
-			else 
-			{
-				tabSpec.setIndicator(tabWidgetTextView.getText(), tabWidgetTextView.getBackground());				
+			} else {
+				tabSpec.setIndicator(tabWidgetTextView.getText(), tabWidgetTextView.getBackground());
 			}
 			tabHost.addTab(tabSpec);
 		}
 	}
 
-	public void SearchRecipe()
-	{	
+	public void SearchRecipe() {
 		ArrayList<IngredientControl> selectedI = new ArrayList<IngredientControl>();
-		int counter = 0;		
+		int counter = 0;
 
-		for(IngredientControl ingredientC : ingredientControls)
+		for (IngredientControl ingredientC : ingredientControls)
 			if (ingredientC.isSelected())
-				selectedI.add(ingredientC);		
+				selectedI.add(ingredientC);
 
-		if (selectedI.size() == 0)
-		{
-			for(RecipeControl recipeControl : recipeControls)	
-			{
+		if (selectedI.size() == 0) {
+			for (RecipeControl recipeControl : recipeControls) {
 				recipeControl.setVisibility(0x00000000);
 				recipeControl.setFilter(true);
 			}
@@ -688,156 +638,143 @@ public class MainActivity extends Activity {
 			return;
 		}
 
-		if (((EditText)findViewById(R.id.txtSearchI)).getVisibility() != View.VISIBLE)
+		if (((EditText) findViewById(R.id.txtSearchI)).getVisibility() != View.VISIBLE)
 			clearIngredients.setVisibility(0x00000000);
 
-		for(RecipeControl recipeControl : recipeControls)
-		{
+		for (RecipeControl recipeControl : recipeControls) {
 			ArrayList<BridgeTable> bridgerecipe = new ArrayList<BridgeTable>();
 
-			for(BridgeTable bridgeTable : bridgeTables)			
+			for (BridgeTable bridgeTable : bridgeTables)
 				if (bridgeTable.getRecipe_id() == recipeControl.getId())
 					bridgerecipe.add(bridgeTable);
 
 			int i = 0;
 
-			for(BridgeTable bridge : bridgerecipe)
-				for(IngredientControl selected : selectedI)
+			for (BridgeTable bridge : bridgerecipe)
+				for (IngredientControl selected : selectedI)
 					if (bridge.getIngredient_id() == selected.getId())
 						i++;
 
-			if (i == bridgerecipe.size())
-			{
+			if (i == bridgerecipe.size()) {
 				recipeControl.setVisibility(0x00000000);
 				recipeControl.setFilter(true);
 				counter++;
-			}
-			else
-			{
+			} else {
 				recipeControl.setVisibility(0x00000008);
 				recipeControl.setFilter(false);
 			}
-		}			
+		}
 		_setCounter(counter);
 	}
 
-	private void _setCounter(int counter) {			
-		try
-		{
+	private void _setCounter(int counter) {
+		try {
 			TabHost tabHost = (TabHost) findViewById(android.R.id.tabhost);
-			TextView title = (TextView)((LinearLayout)tabHost.getTabWidget().getChildAt(1)).getChildAt(1);		
+			TextView title = (TextView) ((LinearLayout) tabHost.getTabWidget().getChildAt(1)).getChildAt(1);
 
-			if (counter <= 20 && counter >= 0 )				
-			{
+			if (counter <= 20 && counter >= 0) {
 				title.setText("RECIPES (" + Integer.toString(counter) + ")");
-			}
-			else if (counter == -1)
+			} else if (counter == -1)
 				title.setText("RECIPES");
 			else if (counter > 20)
 				title.setText("RECIPES (20+)");
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			Log.d("ERROR", e.getMessage());
 		}
 	}
 
-	public void SelectRecipe(Recipe recipe)
-	{
-		((TextView)findViewById(R.id.txtTittleRec)).setText(recipe.getRecipe_name());
+	public void SelectRecipe(Recipe recipe) {
+		((TextView) findViewById(R.id.txtTittleRec)).setText(recipe.getRecipe_name());
 
 		clearIngredients.setVisibility(View.GONE);
 
-		ImageView image = ((ImageView)findViewById(R.id.imgRecipeL));
-		
+		ImageView image = ((ImageView) findViewById(R.id.imgRecipeL));
+
 		/*
-		 * Context context = image.getContext();
-		 * int id = context.getResources().getIdentifier(recipe.getPhoto_name(), "drawable", context.getPackageName());		
-		 * image.setImageResource(id);
+		 * Context context = image.getContext(); int id =
+		 * context.getResources().getIdentifier(recipe.getPhoto_name(),
+		 * "drawable", context.getPackageName()); image.setImageResource(id);
 		 */
-		
-		Picasso.with(this).load(recipe.getPhoto()).into(image);		
+
+		Picasso.with(this).load(recipe.getPhoto()).into(image);
 
 		String listI = "Ingredient List:\n";
 
-		for (String list : recipe.getIngredient_list().split("//")){
+		for (String list : recipe.getIngredient_list().split("//")) {
 			listI += " - " + list.trim() + "\n";
 		}
 
-		((TextView)findViewById(R.id.txtIngList)).setText(listI);	
+		((TextView) findViewById(R.id.txtIngList)).setText(listI);
 
 		listI = "Recipe Description: \n";
 
-		for (String list : recipe.getDescription().split("//")){
+		for (String list : recipe.getDescription().split("//")) {
 			if (list.trim() != "" && list.trim() != "\n")
 				listI += " - " + list.trim() + "\n";
 		}
 
-		((TextView)findViewById(R.id.txtRecDesc)).setText(listI);
+		((TextView) findViewById(R.id.txtRecDesc)).setText(listI);
 
-		LinearLayout mainTab = (LinearLayout)findViewById(R.id.tab2);
+		LinearLayout mainTab = (LinearLayout) findViewById(R.id.tab2);
 
 		mainTab.setVisibility(View.GONE);
 
-		LinearLayout mainTabR = (LinearLayout)findViewById(R.id.tabR2);
+		LinearLayout mainTabR = (LinearLayout) findViewById(R.id.tabR2);
 
 		mainTabR.setVisibility(View.VISIBLE);
 
-		((Button)findViewById(R.id.buttonBackRecipes)).setVisibility(View.VISIBLE);
+		((Button) findViewById(R.id.buttonBackRecipes)).setVisibility(View.VISIBLE);
 	}
 
 	public void ShowLikePanel() {
 
-		((GridLayout)findViewById(R.id.likeGrid)).setVisibility(View.VISIBLE);
-		((LinearLayout)findViewById(R.id.relativeLayout1)).setVisibility(View.GONE);
+		((GridLayout) findViewById(R.id.likeGrid)).setVisibility(View.VISIBLE);
+		((LinearLayout) findViewById(R.id.relativeLayout1)).setVisibility(View.GONE);
 
-		for (IngredientControl ingredient : ingredientControls)
-		{				
-			if (ingredient.isOnLikeOption())
-			{
-				if (ingredient.getLike() == 0)
-				{
-					((Button)findViewById(R.id.buttonFavorite)).setText("Favorite");
-					((Button)findViewById(R.id.buttonExclude)).setText("Exclude");
+		for (IngredientControl ingredient : ingredientControls) {
+			if (ingredient.isOnLikeOption()) {
+				if (ingredient.getLike() == 0) {
+					((Button) findViewById(R.id.buttonFavorite)).setText("Favorite");
+					((Button) findViewById(R.id.buttonExclude)).setText("Exclude");
 				}
 
-				if (ingredient.getLike() == -1)
-				{
-					((Button)findViewById(R.id.buttonFavorite)).setText("Favorite");
-					((Button)findViewById(R.id.buttonExclude)).setText("Include");
+				if (ingredient.getLike() == -1) {
+					((Button) findViewById(R.id.buttonFavorite)).setText("Favorite");
+					((Button) findViewById(R.id.buttonExclude)).setText("Include");
 				}
 
-				if (ingredient.getLike() == 1)
-				{
-					((Button)findViewById(R.id.buttonFavorite)).setText("No Favorite");
-					((Button)findViewById(R.id.buttonExclude)).setText("Exclude");
+				if (ingredient.getLike() == 1) {
+					((Button) findViewById(R.id.buttonFavorite)).setText("No Favorite");
+					((Button) findViewById(R.id.buttonExclude)).setText("Exclude");
 				}
 
-				ImageView imageC =  ((ImageView)findViewById(R.id.imageIPreview));
+				ImageView imageC = ((ImageView) findViewById(R.id.imageIPreview));
 
-				GridLayout grid = (GridLayout)imageC.getParent();
-				grid.getLayoutParams().width = (int)(sizeTile*1.2); 
-				grid.getLayoutParams().height = (int)(sizeTile*1.2);
+				GridLayout grid = (GridLayout) imageC.getParent();
+				grid.getLayoutParams().width = (int) (sizeTile * 1.2);
+				grid.getLayoutParams().height = (int) (sizeTile * 1.2);
 				grid.requestLayout();
 
-				
-				Picasso.with(this).load(ingredient.getPhoto_url()).into(imageC);					
-				/*Context context = imageC.getContext();
-				int id = context.getResources().getIdentifier(ingredient.getPhoto_name(), "drawable", context.getPackageName());		
-				imageC.setImageResource(id);*/
-				imageC.getLayoutParams().width = (int) (sizeTile - (sizeTile*0.35));
-				imageC.getLayoutParams().height = (int) (sizeTile - (sizeTile*0.35));
-				imageC.requestLayout();		
-				((TextView)findViewById(R.id.textIPreview)).setText(ingredient.getTitle());		
-			}				
+				Picasso.with(this).load(ingredient.getPhoto_url()).into(imageC);
+				/*
+				 * Context context = imageC.getContext(); int id =
+				 * context.getResources().getIdentifier(ingredient.getPhoto_name
+				 * (), "drawable", context.getPackageName());
+				 * imageC.setImageResource(id);
+				 */
+				imageC.getLayoutParams().width = (int) (sizeTile - (sizeTile * 0.35));
+				imageC.getLayoutParams().height = (int) (sizeTile - (sizeTile * 0.35));
+				imageC.requestLayout();
+				((TextView) findViewById(R.id.textIPreview)).setText(ingredient.getTitle());
+			}
 		}
 
-	}	
+	}
 
 	@Override
 	protected void onDestroy() {
-		super.onDestroy();		
-		//db.close();
+		super.onDestroy();
+		// db.close();
 	}
 
 }
